@@ -337,7 +337,6 @@ def uniformCostSearch(problem):
         moveQueue.push((successor,history),priority)
     #Pop the first state
     state = moveQueue.pop()
-    print(state)
 
 
     #While we have not found the goal
@@ -399,7 +398,7 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem, heuristic=nullHeuristic):
+def aStarSearch(problem, heuristic):
     """Search the node of least total cost first."""
 
 
@@ -443,15 +442,13 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
         history = stateHistory.copy()
         history.append(successor[1])
-        heuristic = nullHeuristic(successor[0])
+        heuristicValue = heuristic(successor[0],problem)
 
-        priority = successor[2] + heuristic
+        priority = successor[2] + heuristicValue
         moveQueue.push((successor,history),priority)
 
 #   Pop the first state
     state = moveQueue.pop()
-    print(state)
-
 
     #While we have not found the goal
     while found == False:
@@ -498,9 +495,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
                     history = stateHistory.copy()
                     history.append(successor[1])
-                    heuristic = nullHeuristic(successor[0])
+                    heuristicValue = heuristic(successor[0],problem)
 
-                    priority = successor[2] + heuristic
+                    priority = successor[2] + heuristicValue
                     moveQueue.push((successor,history),priority)  
                              
                 #Append this state to the list of explored states
