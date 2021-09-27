@@ -290,28 +290,28 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-  
-        '''
-            INSÉREZ VOTRE SOLUTION À LA QUESTION 5 ICI
-        '''
-        self.statesVisited = []
 
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return self.startingPosition
+        # Store visited corners in an array, and give the state as a tuple of
+        # the current state and the visited corners
+        visited = []
+        return (self.startingPosition, visited)        
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        isGoal = set(self.corners).issubset(self.statesVisited)
-        
-        return isGoal
+            
+        # Corners are all visited if there are 4 elements in the corners array.
+        visited = state[1]
+        return len(visited) == 4
 
     def getSuccessors(self, state):
+
         """
         Returns successor states, the actions they require, and a cost of 1.
 
@@ -321,20 +321,30 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
+        #Apend the state to the states visited
 
         successors = []
+        currentPosition = state[0]
+        visited = state[1]
+
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-           
-            '''
-                INSÉREZ VOTRE SOLUTION À LA QUESTION 5 ICI
-            '''
+            
+            x,y = currentPosition
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
 
+            if not hitsWall:
+                nextPosition = (nextx,nexty)
+                if currentPosition in self.corners and currentPosition not in visited:
+                    visited = visited + [currentPosition]
+
+                direction = action
+                cost = 1
+                thisSuccessor = ((nextPosition,visited),direction,cost)
+                successors.append(thisSuccessor)
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -368,11 +378,23 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    '''
-        INSÉREZ VOTRE SOLUTION À LA QUESTION 6 ICI
-    '''
+
+    #Solve the simpler problem where there are no walls
+    #The sum manhattan distances from pacman to each unexplored corner is a valid Heuristic because
+    #1. Non-triviale, this heurisitc is not null unless the state is the goal state
+    #2. Admissible, it never over-estimates because we are solving the simpler problem with no walls
+    #3. Consistante, it does not over-estimate the state transition for the same reason
+
+    currentPos = state[0]
+    visited = state[1]
+    unVisited = [x for x in corners if x not in visited]
+    heuristic = 0
+    for corner in unVisited:
+        heuristic += util.manhattanDistance(currentPos,corner)
+
     
-    return 0
+    return heuristic
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -469,7 +491,9 @@ def foodHeuristic(state, problem: FoodSearchProblem):
     '''
         INSÉREZ VOTRE SOLUTION À LA QUESTION 7 ICI
     '''
-
+    print(position)
+    print(foodGrid)
 
     return 0
+
 

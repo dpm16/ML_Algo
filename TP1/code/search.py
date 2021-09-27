@@ -92,10 +92,11 @@ def depthFirstSearch(problem):
     moveStack = util.Stack()
 
     #Current state is the start state
-    state = (problem.getStartState(),['start'])
+    #Instantiate a history of moves array and list of explored states
+    state = problem.getStartState()
+    stateHistory = []
+    exploredStates = []
 
-    #Instantiate explored states with initial state
-    exploredStates = [state[0]]
 
     #Get the directions
     from game import Directions
@@ -112,77 +113,54 @@ def depthFirstSearch(problem):
         found = False
 
     #Get the first fringe
-    fringe = problem.getSuccessors(state[0])
-
-    #Get the history of this state
-    stateHistory = state[1]
+    fringe = problem.getSuccessors(state)
 
     #Add the fringe to the stack with the history of moves
     for successor in fringe:
 
-        #print('This move :' + str(successor[1]))
-        #print('State history :' + str(stateHistory))
-
         history = stateHistory.copy()
-        history.append(successor[1])
-        #print('New history : ' + str(history))
-
         moveStack.push((successor,history))
 
-    #Pop the first state
-    state = moveStack.pop()
+    #Pop the first sucessor
+    nextItem = moveStack.pop()
 
     #While we have not found the goal
     while found == False:
+        successor = nextItem[0]
+        state = successor[0]
+        thisAction = successor[1]
+        stateHistory = nextItem[1]
 
-        #If the current state is the goal we found the goal
-        if problem.isGoalState(state[0][0]):
-            #print('Reached goal')
-            #print(state)
-            stringDirectionsToGoal = state[1]
-            directionsToGoal = []
-
-            for s in stringDirectionsToGoal:
-                if s == 'North':
-                    directionsToGoal.append(n)
-                if s == 'South':
-                    directionsToGoal.append(s)
-                if s == 'East':
-                    directionsToGoal.append(e)
-                if s == 'West':
-                    directionsToGoal.append(w)
-            found = True
-            return directionsToGoal
+        #If the current state is the goal we found the goal 
+        if problem.isGoalState(state):
+            stateHistory.append(thisAction)
+            return stateHistory
 
         #If the current state is not the goal   
         else:
 
             alreadyExplored = False
-
+            
             #If this state has not already been explored add the fringe of this state
             for exploredState in exploredStates:
-                if exploredState == state[0][0]:
+                if exploredState == state:
                     alreadyExplored = True
                     break
 
-            if alreadyExplored == False: #If this state is not explored
-                fringe = problem.getSuccessors(state[0][0])
+            if not alreadyExplored: #If this state is not explored
+                fringe = problem.getSuccessors(state)
 
-                #Get the history of this state
-                stateHistory = state[1]
-
- 
                 #Add the fringe to the stack
                 for successor in fringe:
                     history = stateHistory.copy()
-                    history.append(successor[1])
+                    history.append(thisAction)
 
                     moveStack.push((successor,history))
             
                 #Append this state to the list of explored states
-                exploredStates.append(state[0][0])
+                exploredStates.append(state)
 
-            state = moveStack.pop()
+            nextItem = moveStack.pop()
 
 
 
@@ -197,10 +175,9 @@ def breadthFirstSearch(problem):
     moveQueue = util.Queue()
 
     #Current state is the start state
-    state = (problem.getStartState(),['start'])
-
-    #Instantiate explored states with initial state
-    exploredStates = [state[0]]
+    state = problem.getStartState()
+    stateHistory = []
+    exploredStates = []
 
     #Get the directions
     from game import Directions
@@ -217,43 +194,27 @@ def breadthFirstSearch(problem):
         found = False
 
     #Get the first fringe
-    fringe = problem.getSuccessors(state[0])
-
-    #Get the history of this state
-    stateHistory = state[1]
+    fringe = problem.getSuccessors(state)
 
     #Add the fringe to the stack with the history of moves
     for successor in fringe:
-
         history = stateHistory.copy()
-        history.append(successor[1])
         moveQueue.push((successor,history))
 
     #Pop the first state
-    state = moveQueue.pop()
+    nextItem = moveQueue.pop()
 
     #While we have not found the goal
     while found == False:
+        successor = nextItem[0]
+        state = successor[0]
+        thisAction = successor[1]
+        stateHistory = nextItem[1]
 
         #If the current state is the goal we found the goal
-        if problem.isGoalState(state[0][0]):
-            #print('Reached goal')
-            #print(state)
-            stringDirectionsToGoal = state[1]
-            directionsToGoal = []
-
-            for s in stringDirectionsToGoal:
-                if s == 'North':
-                    directionsToGoal.append(n)
-                if s == 'South':
-                    directionsToGoal.append(s)
-                if s == 'East':
-                    directionsToGoal.append(e)
-                if s == 'West':
-                    directionsToGoal.append(w)
-            found = True
-            return directionsToGoal
-
+        if problem.isGoalState(state):
+            stateHistory.append(thisAction)
+            return stateHistory
         #If the current state is not the goal   
         else:
 
@@ -261,32 +222,23 @@ def breadthFirstSearch(problem):
 
             #If this state has not already been explored add the fringe of this state
             for exploredState in exploredStates:
-                if exploredState == state[0][0]:
+                if exploredState == state:
                     alreadyExplored = True
                     break
 
-            if alreadyExplored == False: #If this state is not explored
-                fringe = problem.getSuccessors(state[0][0])
-
-                #Get the history of this state
-                stateHistory = state[1]
-
+            if not alreadyExplored: #If this state is not explored
+                fringe = problem.getSuccessors(state)
  
                 #Add the fringe to the stack
                 for successor in fringe:
-                    #print('This move :' + str(successor[1]))
-                    #print('State history :' + str(stateHistory))
-
                     history = stateHistory.copy()
-                    history.append(successor[1])
-                    #print('New history : ' + str(history))
-
+                    history.append(thisAction)
                     moveQueue.push((successor,history))
             
                 #Append this state to the list of explored states
-                exploredStates.append(state[0][0])
+                exploredStates.append(state)
 
-            state = moveQueue.pop()
+            nextItem = moveQueue.pop()
 
 
 def uniformCostSearch(problem):
@@ -303,10 +255,9 @@ def uniformCostSearch(problem):
     moveQueue = util.PriorityQueue()
 
     #Current state is the start state
-    state = (problem.getStartState(),['start'])
-
-    #Instantiate explored states with initial state
-    exploredStates = [state[0]]
+    state = problem.getStartState()
+    stateHistory = []
+    exploredStates = []
 
     #Get the directions
     from game import Directions
@@ -323,74 +274,57 @@ def uniformCostSearch(problem):
         found = False
 
     #Get the first fringe
-    fringe = problem.getSuccessors(state[0])
-
-    #Get the history of this state
-    stateHistory = state[1]
+    fringe = problem.getSuccessors(state)
 
     #Add the fringe to the stack with the history of moves
     for successor in fringe:
 
         history = stateHistory.copy()
-        history.append(successor[1])
-        priority = successor[2]
-        moveQueue.push((successor,history),priority)
-    #Pop the first state
-    state = moveQueue.pop()
+        cost = successor[2]
+        moveQueue.push((successor,history),cost)
 
+    #Pop the first state
+    nextItem = moveQueue.pop()
 
     #While we have not found the goal
     while found == False:
+        successor = nextItem[0]
+        state = successor[0]
+        thisAction = successor[1]
+        stateHistory = nextItem[1]
 
         #If the current state is the goal we found the goal
-        if problem.isGoalState(state[0][0]):
-            #print('Reached goal')
-            #print(state)
-            stringDirectionsToGoal = state[1]
-            directionsToGoal = []
-
-            for s in stringDirectionsToGoal:
-                if s == 'North':
-                    directionsToGoal.append(n)
-                if s == 'South':
-                    directionsToGoal.append(s)
-                if s == 'East':
-                    directionsToGoal.append(e)
-                if s == 'West':
-                    directionsToGoal.append(w)
-            found = True
-            return directionsToGoal
+        if problem.isGoalState(state):
+            stateHistory.append(thisAction)
+            return stateHistory
 
         #If the current state is not the goal   
         else:
-
             alreadyExplored = False
 
             #If this state has not already been explored add the fringe of this state
             for exploredState in exploredStates:
-                if exploredState == state[0][0]:
+                if exploredState == state:
                     alreadyExplored = True
                     break
 
-            if alreadyExplored == False: #If this state is not explored
-                fringe = problem.getSuccessors(state[0][0])
+            if not alreadyExplored: #If this state is not explored
+                fringe = problem.getSuccessors(state)
 
-                #Get the history of this state
-                stateHistory = state[1]
-
- 
                 #Add the fringe to the stack
                 for successor in fringe:
 
                     history = stateHistory.copy()
-                    history.append(successor[1])
-                    priority = successor[2]
-                    moveQueue.push((successor,history),priority)  
+                    history.append(thisAction)
+                    cost = successor[2]
+                    moveQueue.push((successor,history),cost)  
                              
                 #Append this state to the list of explored states
-                exploredStates.append(state[0][0])
+                exploredStates.append(state)
 
-            state = moveQueue.pop()
+            nextItem = moveQueue.pop()
+
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -412,10 +346,10 @@ def aStarSearch(problem, heuristic):
     moveQueue = util.PriorityQueue()
 
     #Current state is the start state
-    state = (problem.getStartState(),['start'])
+    state = problem.getStartState()
+    stateHistory = []
+    exploredStates = []
 
-    #Instantiate explored states with initial state
-    exploredStates = [state[0]]
 
     #Get the directions
     from game import Directions
@@ -432,78 +366,58 @@ def aStarSearch(problem, heuristic):
         found = False
 
     #Get the first fringe
-    fringe = problem.getSuccessors(state[0])
-
-    #Get the history of this state
-    stateHistory = state[1]
+    fringe = problem.getSuccessors(state)
 
     #Add the fringe to the stack with the history of moves
     for successor in fringe:
 
         history = stateHistory.copy()
-        history.append(successor[1])
         heuristicValue = heuristic(successor[0],problem)
 
         priority = successor[2] + heuristicValue
         moveQueue.push((successor,history),priority)
 
 #   Pop the first state
-    state = moveQueue.pop()
+    nextItem = moveQueue.pop()
 
     #While we have not found the goal
     while found == False:
+        successor = nextItem[0]
+        state = successor[0]
+        thisAction = successor[1]
+        stateHistory = nextItem[1]
 
         #If the current state is the goal we found the goal
-        if problem.isGoalState(state[0][0]):
-            #print('Reached goal')
-            #print(state)
-            stringDirectionsToGoal = state[1]
-            directionsToGoal = []
-
-            for s in stringDirectionsToGoal:
-                if s == 'North':
-                    directionsToGoal.append(n)
-                if s == 'South':
-                    directionsToGoal.append(s)
-                if s == 'East':
-                    directionsToGoal.append(e)
-                if s == 'West':
-                    directionsToGoal.append(w)
-            found = True
-            return directionsToGoal
+        if problem.isGoalState(state):
+            stateHistory.append(thisAction)
+            return stateHistory
 
         #If the current state is not the goal   
         else:
-
             alreadyExplored = False
 
             #If this state has not already been explored add the fringe of this state
             for exploredState in exploredStates:
-                if exploredState == state[0][0]:
+                if exploredState == state:
                     alreadyExplored = True
                     break
 
             if alreadyExplored == False: #If this state is not explored
-                fringe = problem.getSuccessors(state[0][0])
-
-                #Get the history of this state
-                stateHistory = state[1]
-
+                fringe = problem.getSuccessors(state)
  
                 #Add the fringe to the stack
                 for successor in fringe:
 
                     history = stateHistory.copy()
-                    history.append(successor[1])
+                    history.append(thisAction)
                     heuristicValue = heuristic(successor[0],problem)
-
                     priority = successor[2] + heuristicValue
                     moveQueue.push((successor,history),priority)  
                              
                 #Append this state to the list of explored states
-                exploredStates.append(state[0][0])
+                exploredStates.append(state)
 
-            state = moveQueue.pop()
+            nextItem = moveQueue.pop()
 
 
 # Abbreviations
