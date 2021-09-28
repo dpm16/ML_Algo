@@ -93,14 +93,6 @@ def depthFirstSearch(problem):
     stateHistory = []
     exploredStates = [problem.getStartState()]
 
-
-    #Get the directions
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    e = Directions.EAST
-    n = Directions.NORTH
-
     #Check if we started at the solution
     if problem.isGoalState(problem.getStartState()) == True:
         found = True
@@ -172,13 +164,6 @@ def breadthFirstSearch(problem):
     stateHistory = []
     exploredStates = [problem.getStartState()]
 
-    #Get the directions
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    e = Directions.EAST
-    n = Directions.NORTH
-
     #Check if we started at the solution
     if problem.isGoalState(problem.getStartState()) == True:
         found = True
@@ -245,13 +230,6 @@ def uniformCostSearch(problem):
     stateHistory = []
     exploredStates = [problem.getStartState()]
 
-    #Get the directions
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    e = Directions.EAST
-    n = Directions.NORTH
-
     #Check if we started at the solution
     if problem.isGoalState(problem.getStartState()) == True:
         found = True
@@ -317,7 +295,7 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def aStarSearch(problem, heuristic):
+def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node of least total cost first."""
 
     #Instantiate priority queue of our moves
@@ -326,15 +304,7 @@ def aStarSearch(problem, heuristic):
     #Current state is the start state
     state = problem.getStartState()
     stateHistory = []
-    exploredStates = []
-
-
-    #Get the directions
-    from game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    e = Directions.EAST
-    n = Directions.NORTH
+    exploredStates = [problem.getStartState()]
 
     #Check if we started at the solution
     if problem.isGoalState(problem.getStartState()) == True:
@@ -350,20 +320,18 @@ def aStarSearch(problem, heuristic):
     for successor in fringe:
 
         history = stateHistory.copy()
+        cost = successor[2]
         heuristicValue = heuristic(successor[0],problem)
+        moveQueue.push((successor,history,cost),cost + heuristicValue)
 
-        priority = successor[2] + heuristicValue
-        moveQueue.push((successor,history),priority)
-
-    #   Pop the first state
     nextItem = moveQueue.pop()
-
     #While we have not found the goal
     while found == False:
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
         stateHistory = nextItem[1]
+        currentCost = nextItem[2]
 
         #If the current state is the goal we found the goal
         if problem.isGoalState(state):
@@ -380,17 +348,18 @@ def aStarSearch(problem, heuristic):
                     alreadyExplored = True
                     break
 
-            if alreadyExplored == False: #If this state is not explored
+            if not alreadyExplored: #If this state is not explored
                 fringe = problem.getSuccessors(state)
- 
+
                 #Add the fringe to the stack
                 for successor in fringe:
 
                     history = stateHistory.copy()
                     history.append(thisAction)
+                    cost = currentCost + successor[2]
                     heuristicValue = heuristic(successor[0],problem)
-                    priority = successor[2] + heuristicValue
-                    moveQueue.push((successor,history),priority)  
+
+                    moveQueue.push((successor,history,cost),cost + heuristicValue)
                              
                 #Append this state to the list of explored states
                 exploredStates.append(state)

@@ -298,17 +298,17 @@ class CornersProblem(search.SearchProblem):
         """
         # Store visited corners in an array, and give the state as a tuple of
         # the current state and the visited corners
-        visited = []
-        return (self.startingPosition, visited)        
+        cornersFound = []
+        return (self.startingPosition, cornersFound)        
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
             
-        # Corners are all visited if there are 4 elements in the corners array.
-        visited = state[1]
-        return len(visited) == 4
+        # Check if we have visited all 4 corners
+        cornersFound = state[1]
+        return len(cornersFound) == 4
 
     def getSuccessors(self, state):
 
@@ -325,7 +325,7 @@ class CornersProblem(search.SearchProblem):
 
         successors = []
         currentPosition = state[0]
-        visited = state[1]
+        cornersFound = state[1]
 
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
@@ -338,12 +338,15 @@ class CornersProblem(search.SearchProblem):
 
             if not hitsWall:
                 nextPosition = (nextx,nexty)
-                if currentPosition in self.corners and currentPosition not in visited:
-                    visited = visited + [currentPosition]
-
-                direction = action
                 cost = 1
-                thisSuccessor = ((nextPosition,visited),direction,cost)
+
+                if nextPosition in self.corners and nextPosition not in cornersFound:
+                    newCornerFound = cornersFound + [nextPosition]
+                    thisSuccessor = ((nextPosition,newCornerFound),action,cost)
+
+                else:
+                    thisSuccessor = ((nextPosition,cornersFound),action,cost)
+                    
                 successors.append(thisSuccessor)
 
         self._expanded += 1 # DO NOT CHANGE
@@ -380,19 +383,44 @@ def cornersHeuristic(state, problem):
 
 
     #Solve the simpler problem where there are no walls
-    #The sum manhattan distances from pacman to each unexplored corner is a valid Heuristic because
+    #The heuristic is the following:
+    #Find the manhattan distance between pacman and the closest corner
+    #Find the manhattan distance between the closest corner and the closest corner from that one
+    #Repeat this operation for all corners
+    #Add these distances
+
+    #The above is valid heuritic for the following reasons:
     #1. Non-triviale, this heurisitc is not null unless the state is the goal state
     #2. Admissible, it never over-estimates because we are solving the simpler problem with no walls
     #3. Consistante, it does not over-estimate the state transition for the same reason
 
-    currentPos = state[0]
+    node = state[0]
     visited = state[1]
     unVisited = [x for x in corners if x not in visited]
     heuristic = 0
-    for corner in unVisited:
-        heuristic += util.manhattanDistance(currentPos,corner)
 
-    
+    #While there are still corners unvisited
+    while unVisited:
+
+        #Find the closest corner and the distance between the node and this corner
+        shortestDistance = 99999999999999999999999999
+        closestCorner = []
+        for corner in unVisited:
+            distance = util.manhattanDistance(node, corner)
+
+            if distance < shortestDistance:
+                shortestDistance = distance
+                closestCorner = corner
+        
+        #Add the distance between this node and the closest corner
+        heuristic += shortestDistance
+        
+        #Restart this operation with pacman at this closest corner
+        node = closestCorner
+
+        #Remove the closest corner from the unvisited list
+        unVisited.remove(closestCorner)
+
     return heuristic
 
 
@@ -427,7 +455,6 @@ class FoodSearchProblem:
     def getSuccessors(self, state):
         "Returns successor states, the actions they require, and a cost of 1."
         successors = []
-        self._expanded += 1 # DO NOT CHANGE
         for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             x,y = state[0]
             dx, dy = Actions.directionToVector(direction)
@@ -436,6 +463,9 @@ class FoodSearchProblem:
                 nextFood = state[1].copy()
                 nextFood[nextx][nexty] = False
                 successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
+
+
+        self._expanded += 1 # DO NOT CHANGE
         return successors
 
     def getCostOfActions(self, actions):
@@ -457,6 +487,14 @@ class AStarFoodSearchAgent(SearchAgent):
     def __init__(self):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
+
+
+#This function returns a basic manhattan heuristic from the state to the goal
+def manhattanHeuristic(state, problem):
+    goal = problem.goal
+    currentPosition = state
+
+    return util.manhattanDistance(currentPosition,goal)
 
 def foodHeuristic(state, problem: FoodSearchProblem):
     """
@@ -488,28 +526,26 @@ def foodHeuristic(state, problem: FoodSearchProblem):
     """
     position, foodGrid = state
 
-    '''
-        INSÉREZ VOTRE SOLUTION À LA QUESTION 7 ICI
-    '''
-    # print(position)
-
+    #Convert the foodGrid to a list
     foodList = foodGrid.asList()
 
-    if 'foodVisited' not in problem.heuristicInfo:
-        problem.heuristicInfo['foodVisited'] = []
+    #Simplify the problem by finding the real distance between pacman and the furthest food
+    #No matter where pacman is, it will have to move at least that distance to reach the goal
+    #To speed up compute time we use astar search to find the furthest food with a basic manhattan distance heuristic
+    #This heuristic is:
+    #Non trivial: Only returns null when pacman is at the goal
+    #Admissible: Will never overestimate the position for the reason given above
+    #Consistent: We do not have the problem of same distances since we are only looking for the furthest
 
+    node = position
+    heuristic = 0
+    unVisited = foodList
 
-    if position in foodList and position not in problem.heuristicInfo['foodVisited']:
-        foodListArray = problem.heuristicInfo['foodVisited'].copy()
-        foodListArray.append(position)
-        problem.heuristicInfo['foodVisited'] = foodListArray
+    for food in foodList:
+        prob = PositionSearchProblem(problem.startingGameState, start=node, goal=food, warn=False, visualize=False)
+        distance = len(search.astar(prob,manhattanHeuristic))
+        if distance > heuristic:
+            heuristic = distance
 
-    visited = problem.heuristicInfo['foodVisited'].copy()
-    unVisited = [x for x in foodList if x not in visited]
-
-    heuristic = len(unVisited)
-
-    #BEST SCORE 570
     return heuristic
-
 
