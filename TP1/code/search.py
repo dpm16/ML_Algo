@@ -83,10 +83,6 @@ def depthFirstSearch(problem):
     understand the search problem that is being passed in:
     """
 
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-
 
     #Instantiate Stack of our moves
     moveStack = util.Stack()
@@ -95,7 +91,7 @@ def depthFirstSearch(problem):
     #Instantiate a history of moves array and list of explored states
     state = problem.getStartState()
     stateHistory = []
-    exploredStates = []
+    exploredStates = [problem.getStartState()]
 
 
     #Get the directions
@@ -166,9 +162,6 @@ def depthFirstSearch(problem):
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
 
 
     #Instantiate queue of our moves
@@ -177,7 +170,7 @@ def breadthFirstSearch(problem):
     #Current state is the start state
     state = problem.getStartState()
     stateHistory = []
-    exploredStates = []
+    exploredStates = [problem.getStartState()]
 
     #Get the directions
     from game import Directions
@@ -244,20 +237,13 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
 
-
-    """Search the shallowest nodes in the search tree first."""
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-
-
     #Instantiate priority queue of our moves
     moveQueue = util.PriorityQueue()
 
     #Current state is the start state
     state = problem.getStartState()
     stateHistory = []
-    exploredStates = []
+    exploredStates = [problem.getStartState()]
 
     #Get the directions
     from game import Directions
@@ -281,17 +267,16 @@ def uniformCostSearch(problem):
 
         history = stateHistory.copy()
         cost = successor[2]
-        moveQueue.push((successor,history),cost)
+        moveQueue.push((successor,history,cost),cost)
 
-    #Pop the first state
     nextItem = moveQueue.pop()
-
     #While we have not found the goal
     while found == False:
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
         stateHistory = nextItem[1]
+        currentCost = nextItem[2]
 
         #If the current state is the goal we found the goal
         if problem.isGoalState(state):
@@ -316,8 +301,8 @@ def uniformCostSearch(problem):
 
                     history = stateHistory.copy()
                     history.append(thisAction)
-                    cost = successor[2]
-                    moveQueue.push((successor,history),cost)  
+                    cost = currentCost + successor[2]
+                    moveQueue.push((successor,history,cost),cost)
                              
                 #Append this state to the list of explored states
                 exploredStates.append(state)
@@ -334,13 +319,6 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic):
     """Search the node of least total cost first."""
-
-
-    """Search the shallowest nodes in the search tree first."""
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-
 
     #Instantiate priority queue of our moves
     moveQueue = util.PriorityQueue()
@@ -377,7 +355,7 @@ def aStarSearch(problem, heuristic):
         priority = successor[2] + heuristicValue
         moveQueue.push((successor,history),priority)
 
-#   Pop the first state
+    #   Pop the first state
     nextItem = moveQueue.pop()
 
     #While we have not found the goal

@@ -491,9 +491,25 @@ def foodHeuristic(state, problem: FoodSearchProblem):
     '''
         INSÉREZ VOTRE SOLUTION À LA QUESTION 7 ICI
     '''
-    print(position)
-    print(foodGrid)
+    # print(position)
 
-    return 0
+    foodList = foodGrid.asList()
+
+    if 'foodVisited' not in problem.heuristicInfo:
+        problem.heuristicInfo['foodVisited'] = []
+
+
+    if position in foodList and position not in problem.heuristicInfo['foodVisited']:
+        foodListArray = problem.heuristicInfo['foodVisited'].copy()
+        foodListArray.append(position)
+        problem.heuristicInfo['foodVisited'] = foodListArray
+
+    visited = problem.heuristicInfo['foodVisited'].copy()
+    unVisited = [x for x in foodList if x not in visited]
+
+    heuristic = len(unVisited)
+
+    #BEST SCORE 570
+    return heuristic
 
 
