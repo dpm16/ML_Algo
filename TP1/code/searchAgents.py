@@ -288,16 +288,13 @@ class CornersProblem(search.SearchProblem):
             if not startingGameState.hasFood(*corner):
                 print('Warning: no food in corner ' + str(corner))
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
-        # Please add any code here which you would like to use
-        # in initializing the problem
 
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        # Store visited corners in an array, and give the state as a tuple of
-        # the current state and the visited corners
+        # Instantiate an array containing the position of the corners we have found
         cornersFound = []
         return (self.startingPosition, cornersFound)        
 
@@ -306,8 +303,11 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
             
-        # Check if we have visited all 4 corners
+        #Unpack the number of found corners for this state
         cornersFound = state[1]
+
+        #If the length of this array is 4 we have found all 4 corners so return True
+        #If the length is not for we have not found all 4 corners so return False
         return len(cornersFound) == 4
 
     def getSuccessors(self, state):
@@ -321,9 +321,10 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-        #Apend the state to the states visited
-
+        #Instantiate the successors array
         successors = []
+
+        #Get the current position and the number of found corners for this state
         currentPosition = state[0]
         cornersFound = state[1]
 
@@ -336,17 +337,27 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
 
+            #If Pacman does not hit a wall for this action
             if not hitsWall:
+                
+                #Get a tuple with the next position of Pacman for this action
                 nextPosition = (nextx,nexty)
-                cost = 1
 
+                #The cost of any action is always 1
+                cost = 1
+                
+                #If the next position is a corner that has not yet been visited
                 if nextPosition in self.corners and nextPosition not in cornersFound:
+                    
+                    #Add this new corner to the list of found corners
                     newCornerFound = cornersFound + [nextPosition]
                     thisSuccessor = ((nextPosition,newCornerFound),action,cost)
 
+                #If the next position is not a corner or is one already found do not update the found corners array
                 else:
                     thisSuccessor = ((nextPosition,cornersFound),action,cost)
-                    
+
+                #Append this successor to the array of successors    
                 successors.append(thisSuccessor)
 
         self._expanded += 1 # DO NOT CHANGE
@@ -379,24 +390,37 @@ def cornersHeuristic(state, problem):
     admissible (as well as consistent).
     """
     corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-
 
     #Solve the simpler problem where there are no walls
     #The heuristic is the following:
     #Find the manhattan distance between pacman and the closest corner
     #Find the manhattan distance between the closest corner and the closest corner from that one
-    #Repeat this operation for all corners
+    #Repeat this operation for all remaining corners
     #Add these distances
 
     #The above is valid heuritic for the following reasons:
-    #1. Non-triviale, this heurisitc is not null unless the state is the goal state
-    #2. Admissible, it never over-estimates because we are solving the simpler problem with no walls
-    #3. Consistante, it does not over-estimate the state transition for the same reason
+    #1. Non-triviale
+    #   This heurisitc is not null unless the state is the goal state
 
+    #2. Admissible
+    #   It never over-estimates because this heuristic finds the shortest possible cost remaining for pacman
+    #   to reach the goal state if there was no walls. And since the real problem has walls, the actual cost will always be
+    #   higher than the heuristic.
+
+    #3. Consistante
+    #   Even if the manhattan distance is equal between pacman and two corners, the heuristic will still return the same value.
+
+    #Define the node as the position that is looking for its closest corner
+    #At first, the node is Pacman's position
     node = state[0]
+
+    #Get a list of corners already visited
     visited = state[1]
+
+    #Get a list of corners that have not been visited
     unVisited = [x for x in corners if x not in visited]
+
+    #Instantiate the heuristic as the null heuristic
     heuristic = 0
 
     #While there are still corners unvisited
@@ -405,9 +429,14 @@ def cornersHeuristic(state, problem):
         #Find the closest corner and the distance between the node and this corner
         shortestDistance = 99999999999999999999999999
         closestCorner = []
+        
+        #Iterate over unvistied corners
         for corner in unVisited:
+
+            #Get the distance between the current node and the corner
             distance = util.manhattanDistance(node, corner)
 
+            #If this distance is the shortest so far, mark it as the closest corner
             if distance < shortestDistance:
                 shortestDistance = distance
                 closestCorner = corner
@@ -415,7 +444,7 @@ def cornersHeuristic(state, problem):
         #Add the distance between this node and the closest corner
         heuristic += shortestDistance
         
-        #Restart this operation with pacman at this closest corner
+        #Restart this operation with the new node at this closest corner
         node = closestCorner
 
         #Remove the closest corner from the unvisited list
@@ -489,7 +518,8 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 
-#This function returns a basic manhattan heuristic from the state to the goal
+#This function is a basic manhattan heuristic
+#It returns the distance between the current state and the end goal
 def manhattanHeuristic(state, problem):
     goal = problem.goal
     currentPosition = state
@@ -529,21 +559,41 @@ def foodHeuristic(state, problem: FoodSearchProblem):
     #Convert the foodGrid to a list
     foodList = foodGrid.asList()
 
-    #Simplify the problem by finding the real distance between pacman and the furthest food
-    #No matter where pacman is, it will have to move at least that distance to reach the goal
-    #To speed up compute time we use astar search to find the furthest food with a basic manhattan distance heuristic
+    #As heuristic we find the real in maze distance between pacman and the furthest food
+    #No matter where pacman is, it will have to move at least that distance to have eaten all hte food
+    #To speed up compute time we use A* search to find the real distance between pacman and the furthest food
+
     #This heuristic is:
-    #Non trivial: Only returns null when pacman is at the goal
-    #Admissible: Will never overestimate the position for the reason given above
-    #Consistent: We do not have the problem of same distances since we are only looking for the furthest
+    #1. Non-triviale
+    #   This distance between Pacman and the furthest food changes and is not null
 
-    node = position
+
+    #2. Admissible
+    #   This heuristic never over-estimates the cost of an action because even if all the food
+    #   is perfectly lined up, Parcman will still have to move to the furthest away pellet
+
+    #3. Consistante
+    #   This Heuristic is consistent since the heuristic will return the same value even if two
+    #   pellets of food are the same real distance away
+
+    #Instantiate the heuristic as the null heuristic
     heuristic = 0
-    unVisited = foodList
 
+    #Iterate over the food that is left in the maze
     for food in foodList:
-        prob = PositionSearchProblem(problem.startingGameState, start=node, goal=food, warn=False, visualize=False)
+
+        #Define a position search problem between Pacman and the food
+        #The start position of this problem is Pacman's current position
+        #The goal of this problem is to reach the food
+        prob = PositionSearchProblem(problem.startingGameState, start=position, goal=food, warn=False, visualize=False)
+
+        #Find the real distance in the maze between pacman and the food
+        #To solve the problem we use A* search with the manhattan heuristic
+        #This is a valid heuristic for the position search problem
         distance = len(search.astar(prob,manhattanHeuristic))
+
+        #If the real maze distance of this food is further than the current heuristic,
+        #Set the heuristic to this longer distance
         if distance > heuristic:
             heuristic = distance
 

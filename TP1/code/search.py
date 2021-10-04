@@ -83,8 +83,7 @@ def depthFirstSearch(problem):
     understand the search problem that is being passed in:
     """
 
-
-    #Instantiate Stack of our moves
+    #Instantiate Stack of our moves for depth first search
     moveStack = util.Stack()
 
     #Current state is the start state
@@ -103,17 +102,22 @@ def depthFirstSearch(problem):
     #Get the first fringe
     fringe = problem.getSuccessors(state)
 
-    #Add the fringe to the stack with the history of moves
+    #Get the successors of the start state
     for successor in fringe:
 
         history = stateHistory.copy()
         moveStack.push((successor,history))
 
-    #Pop the first sucessor
+    #Get the next item in the fringe
     nextItem = moveStack.pop()
 
     #While we have not found the goal
     while found == False:
+        #Unpack the item
+        #sucessor : Successors of this state
+        #state : Current state
+        #thisAction : Action took to get to this state (N,S,E,W)
+        #stateHistory : List of actions to get to this state (e.g. N,N,N,W,W,E,E,N...)
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
@@ -121,12 +125,13 @@ def depthFirstSearch(problem):
 
         #If the current state is the goal we found the goal 
         if problem.isGoalState(state):
+
+            #Append this state's action on the list of actions to get to this state
             stateHistory.append(thisAction)
             return stateHistory
 
         #If the current state is not the goal   
         else:
-
             alreadyExplored = False
             
             #If this state has not already been explored add the fringe of this state
@@ -135,19 +140,20 @@ def depthFirstSearch(problem):
                     alreadyExplored = True
                     break
 
-            if not alreadyExplored: #If this state is not explored
+            #If this state is not explored
+            if not alreadyExplored: 
                 fringe = problem.getSuccessors(state)
 
                 #Add the fringe to the stack
                 for successor in fringe:
                     history = stateHistory.copy()
                     history.append(thisAction)
-
                     moveStack.push((successor,history))
             
                 #Append this state to the list of explored states
                 exploredStates.append(state)
-
+            
+            #Get the next item in the fringe
             nextItem = moveStack.pop()
 
 
@@ -155,8 +161,7 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
 
-
-    #Instantiate queue of our moves
+    #Instantiate queue of our moves of breadth first search
     moveQueue = util.Queue()
 
     #Current state is the start state
@@ -179,11 +184,16 @@ def breadthFirstSearch(problem):
         history = stateHistory.copy()
         moveQueue.push((successor,history))
 
-    #Pop the first state
+    #Get the next item
     nextItem = moveQueue.pop()
 
     #While we have not found the goal
     while found == False:
+        #Unpack the item
+        #sucessor : Successors of this state
+        #state : Current state
+        #thisAction : Action took to get to this state (N,S,E,W)
+        #stateHistory : List of actions to get to this state (e.g. N,N,N,W,W,E,E,N...)
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
@@ -191,11 +201,13 @@ def breadthFirstSearch(problem):
 
         #If the current state is the goal we found the goal
         if problem.isGoalState(state):
+
+            #Append this state's action on the list of actions to get to this state
             stateHistory.append(thisAction)
             return stateHistory
+
         #If the current state is not the goal   
         else:
-
             alreadyExplored = False
 
             #If this state has not already been explored add the fringe of this state
@@ -203,8 +215,9 @@ def breadthFirstSearch(problem):
                 if exploredState == state:
                     alreadyExplored = True
                     break
-
-            if not alreadyExplored: #If this state is not explored
+                
+            #If this state is not explored
+            if not alreadyExplored:
                 fringe = problem.getSuccessors(state)
  
                 #Add the fringe to the stack
@@ -215,14 +228,15 @@ def breadthFirstSearch(problem):
             
                 #Append this state to the list of explored states
                 exploredStates.append(state)
-
+                
+            #Get the next item in the fringe
             nextItem = moveQueue.pop()
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
 
-    #Instantiate priority queue of our moves
+    #Instantiate priority queue for uniform cost search
     moveQueue = util.PriorityQueue()
 
     #Current state is the start state
@@ -242,14 +256,21 @@ def uniformCostSearch(problem):
 
     #Add the fringe to the stack with the history of moves
     for successor in fringe:
-
         history = stateHistory.copy()
         cost = successor[2]
         moveQueue.push((successor,history,cost),cost)
 
+    #Get the next item in the fringe
     nextItem = moveQueue.pop()
+
     #While we have not found the goal
     while found == False:
+        #Unpack the item
+        #sucessor : Successors of this state
+        #state : Current state
+        #thisAction : Action took to get to this state (N,S,E,W)
+        #stateHistory : List of actions to get to this state (e.g. N,N,N,W,W,E,E,N...)
+        #currentCost : Cost to get to this state
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
@@ -258,6 +279,8 @@ def uniformCostSearch(problem):
 
         #If the current state is the goal we found the goal
         if problem.isGoalState(state):
+
+            #Append this state's action on the list of actions to get to this state
             stateHistory.append(thisAction)
             return stateHistory
 
@@ -271,12 +294,12 @@ def uniformCostSearch(problem):
                     alreadyExplored = True
                     break
 
-            if not alreadyExplored: #If this state is not explored
+            #If this state is not explored
+            if not alreadyExplored:
                 fringe = problem.getSuccessors(state)
 
                 #Add the fringe to the stack
                 for successor in fringe:
-
                     history = stateHistory.copy()
                     history.append(thisAction)
                     cost = currentCost + successor[2]
@@ -285,6 +308,7 @@ def uniformCostSearch(problem):
                 #Append this state to the list of explored states
                 exploredStates.append(state)
 
+            #Get the next item in the fringe
             nextItem = moveQueue.pop()
 
 
@@ -298,7 +322,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node of least total cost first."""
 
-    #Instantiate priority queue of our moves
+    #Instantiate priority queue of our A* search
     moveQueue = util.PriorityQueue()
 
     #Current state is the start state
@@ -324,9 +348,17 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         heuristicValue = heuristic(successor[0],problem)
         moveQueue.push((successor,history,cost),cost + heuristicValue)
 
+    #Get the next item in the fringe
     nextItem = moveQueue.pop()
+
     #While we have not found the goal
     while found == False:
+        #Unpack the item
+        #sucessor : Successors of this state
+        #state : Current state
+        #thisAction : Action took to get to this state (N,S,E,W)
+        #stateHistory : List of actions to get to this state (e.g. N,N,N,W,W,E,E,N...)
+        #currentCost : Cost to get to this state
         successor = nextItem[0]
         state = successor[0]
         thisAction = successor[1]
@@ -335,6 +367,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
         #If the current state is the goal we found the goal
         if problem.isGoalState(state):
+
+            #Append this state's action on the list of actions to get to this state
             stateHistory.append(thisAction)
             return stateHistory
 
@@ -358,14 +392,13 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                     history.append(thisAction)
                     cost = currentCost + successor[2]
                     heuristicValue = heuristic(successor[0],problem)
-
                     moveQueue.push((successor,history,cost),cost + heuristicValue)
                              
                 #Append this state to the list of explored states
                 exploredStates.append(state)
 
+            #Get the next item in the fringe
             nextItem = moveQueue.pop()
-
 
 # Abbreviations
 bfs = breadthFirstSearch
