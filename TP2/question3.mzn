@@ -1,4 +1,5 @@
 include "globals.mzn"; 
+include "regular.mzn";
 
 int: n; % num rows and columns
 
@@ -15,7 +16,22 @@ array[1..n] of int: cols;
 % decision variables
 array[1..n,1..n] of var 0..P: x;
 
+predicate count(array[$X] of var int: x, var int: y, var int: c) =
+    count_eq(array1d(x), y, c);
 
+% place the lamps in the garden
+constraint forall(i in 1..n)(
+  forall(j in 1..n)(
+    x[i,j] = garden[i,j]));
+
+
+
+
+% the sum of lines and columns must respect the technical limitations
+% constraint forall(i in 1..n)(sum(j in 1..n)(x[i,j]) = rows[i]);
+
+% % the sum of lines and columns must respect the technical limitations
+% constraint forall(j in 1..n)(sum(i in 1..n)(x[i,j]) = cols[j]);
 
 output 
 [
