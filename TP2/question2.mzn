@@ -10,14 +10,10 @@ array[1..n] of var 0..3*n: x;
 % (i, j) is the result of player i against player j
 array[1..n, 1..n] of var {0,1,3}: matches;
 
-% say last player has our unknown score
+% last player has our unknown score
 % assign scores to the first 4 players
-constraint forall(i in 1..4)(
+constraint forall(i in 1..n-1)(
   x[i] = res[i]);
-
-% % since they all play eachother once we can find the number of total games played
-% % the number of games played is 5 choose 2 (5!/2!)
-% int: gamesplayed = 5*4*3;
 
 % players cannot play themselves
 constraint forall(i in 1..n)(
@@ -32,7 +28,6 @@ constraint forall(i in 1..n)(
 % this means that if matches[1,2] = 3 then matches[2,1] = 0 
 % and that if matches[1,3] = 1 then matches[3,1] = 1
 % to avoid contradictions, only check the top right diagonal (j > i)
-
 constraint forall(i in 1..n)(
   forall(j in 1..n)(
     if j > i then
@@ -52,11 +47,14 @@ output
 ]
 ++	
 [
-  "\nMatches\n"
+  "\n\nMatches\n\n"
 ]
 ++
-[ show(matches[i,j]) ++ 
-         if j == n then "\n" else " " endif |
+["       | Opponent  | \n       | 1 2 3 4 5 |\nPlayer |-----------| Points\n"]
+++
+[
+         if j == 1 then show(i) ++ "      | " ++ show(matches[i,j])
+         elseif j == n then " " ++ show(matches[i,j]) ++ " | " ++ show(x[i]) ++ "\n" else " " ++ show(matches[i,j]) endif |
          i in 1..n, j in 1..n
 ]
 ;

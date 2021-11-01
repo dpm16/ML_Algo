@@ -27,10 +27,11 @@ constraint forall(i,j in 1..n where garden[i,j] != L)(
 % since P = 2, we double the value of rows and cols
 % make sure to only set Plants (P) where there are no Lamps (L)
 % make sure the sum of plants in rows and columns corresponds to given rows/cols
-constraint forall(i in 1..n)(sum(j in 1..n where garden[i,j] != L )(x[i,j]) = rows[i]*2);
+constraint forall(i in 1..n)(sum(j in 1..n where garden[i,j] != L)(x[i,j]) = rows[i]*2);
 constraint forall(j in 1..n)(sum(i in 1..n where garden[i,j] != L)(x[i,j]) = cols[j]*2);
 
-% Make sure that all lamps are directly touching at least one plant
+% make sure that all lamps are directly touching at least one plant
+% when checking neighbouring elements in array mind the edge cases
 constraint forall(i,j in 1..n where garden[i,j] == L)(
   (if i != n then x[i+1,j] == P else false endif) \/
   (if i != 1 then x[i-1,j] == P else false endif) \/
@@ -39,7 +40,7 @@ constraint forall(i,j in 1..n where garden[i,j] == L)(
 
 % plants must not touch eachother directly or diagonnaly
 constraint forall(i,j in 1..n where x[i,j] == P)(
-  (if i != n then x[i+1,j] != P  endif) /\
+  (if i != n then x[i+1,j] != P endif) /\
   (if i != 1 then x[i-1,j] != P endif) /\
   (if j != n then x[i,j+1] != P endif) /\
   (if j != 1 then x[i,j-1] != P endif) /\
